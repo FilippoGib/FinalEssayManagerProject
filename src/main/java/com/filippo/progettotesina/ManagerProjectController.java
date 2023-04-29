@@ -13,7 +13,7 @@ import javafx.scene.control.cell.PropertyValueFactory;
 import java.time.LocalDate;
 import java.util.NoSuchElementException;
 
-public class TesinaController {
+public class ManagerProjectController {
 
     @FXML
     private Label birthdayLabel;

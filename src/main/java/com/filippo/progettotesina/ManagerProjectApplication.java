@@ -7,10 +7,10 @@ import javafx.stage.Stage;
 
 import java.io.IOException;
 
-public class TesinaApplication extends Application {
+public class ManagerProjectApplication extends Application {
     @Override
     public void start(Stage stage) throws IOException {
-        FXMLLoader fxmlLoader = new FXMLLoader(TesinaApplication.class.getResource("tesina-view.fxml"));
+        FXMLLoader fxmlLoader = new FXMLLoader(ManagerProjectApplication.class.getResource("ManagerProject-overview-view.fxml"));
         Scene scene = new Scene(fxmlLoader.load());
         stage.setTitle("Academy Management");
         stage.setScene(scene);
