@@ -4,14 +4,15 @@ import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
-import javafx.scene.control.Alert;
-import javafx.scene.control.Label;
-import javafx.scene.control.TableColumn;
-import javafx.scene.control.TableView;
+import javafx.fxml.FXMLLoader;
+import javafx.scene.control.*;
 import javafx.scene.control.cell.PropertyValueFactory;
+import javafx.stage.Modality;
 
+import java.io.IOException;
 import java.time.LocalDate;
 import java.util.NoSuchElementException;
+import java.util.Optional;
 
 public class ManagerProjectController {
 
@@ -61,14 +62,7 @@ public class ManagerProjectController {
 
         ObservableList<Person> persons = FXCollections.observableArrayList();
         persons.add(new Person("Filippo", "Gibertini","via burchi","Modena", LocalDate.of(2002, 4, 18),LocalDate.of(2024,4,29),true));
-     /*   persons.add(new Person("Thomas", "Mueller"));
-        persons.add(new Person("Benito", "Mussolini"));
-        persons.add(new Person("Corinna", "Negri"));
-        persons.add(new Person("Stanis", "La Rochelle"));
-        persons.add(new Person("Lydia", "Kunz"));
-        persons.add(new Person("Anna", "Best"));
-        persons.add(new Person("Stefan", "Meier"));
-        persons.add(new Person("Martin", "Mueller"));*/
+
         return persons;
     }
     private void showPersonDetails(Person person) {
@@ -153,8 +147,33 @@ public class ManagerProjectController {
     }
 
     @FXML
-    void handleEditPerson(ActionEvent event) {
+    public void handleEditPerson() {
+        try {
+            FXMLLoader loader = new FXMLLoader();
+            loader.setLocation(getClass().getResource("ManagerProject-edit-view.fxml"));
+            DialogPane view = loader.load();
+            ManagerProjectEditController controller = loader.getController();
 
+            // Set the person into the controller.
+            int selectedIndex = selectedIndex();
+            controller.setPerson(new Person(personTable.getItems().get(selectedIndex)));
+
+            // Create the dialog
+            Dialog<ButtonType> dialog = new Dialog<>();
+            dialog.setTitle("Edita Persona");
+            dialog.initModality(Modality.WINDOW_MODAL);
+            dialog.setDialogPane(view);
+
+            // Show the dialog and wait until the user closes it
+            Optional<ButtonType> clickedButton = dialog.showAndWait();
+            if (clickedButton.orElse(ButtonType.CANCEL) == ButtonType.OK) {
+                personTable.getItems().set(selectedIndex, controller.getPerson());
+            }
+        } catch (NoSuchElementException e) {
+            showNoPersonSelectedAlert();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
     }
 
     @FXML
@@ -163,8 +182,30 @@ public class ManagerProjectController {
     }
 
     @FXML
-    void handleNewPerson(ActionEvent event) {
+    public void handleNewPerson() {
+        try {
+            FXMLLoader loader = new FXMLLoader();
+            loader.setLocation(getClass().getResource("ManagerProject-edit-view.fxml"));
+            DialogPane view = loader.load();
+            ManagerProjectEditController controller = loader.getController();
 
+            // Set an empty person into the controller
+            controller.setPerson(new Person("First Name", "Last Name", "Street", "City",LocalDate.now(), LocalDate.now(),true));
+
+            // Create the dialog
+            Dialog<ButtonType> dialog = new Dialog<>();
+            dialog.setTitle("Nuova Persona");
+            dialog.initModality(Modality.WINDOW_MODAL);
+            dialog.setDialogPane(view);
+
+            // Show the dialog and wait until the user closes it
+            Optional<ButtonType> clickedButton = dialog.showAndWait();
+            if (clickedButton.orElse(ButtonType.CANCEL) == ButtonType.OK) {
+                personTable.getItems().add(controller.getPerson());
+            }
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
     }
 
     @FXML

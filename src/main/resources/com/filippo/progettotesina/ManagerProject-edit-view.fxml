@@ -7,12 +7,13 @@
 <?import javafx.scene.control.Label?>
 <?import javafx.scene.control.RadioButton?>
 <?import javafx.scene.control.TextField?>
+<?import javafx.scene.control.ToggleGroup?>
 <?import javafx.scene.layout.AnchorPane?>
 <?import javafx.scene.layout.ColumnConstraints?>
 <?import javafx.scene.layout.GridPane?>
 <?import javafx.scene.layout.RowConstraints?>
 
-<DialogPane maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="300.0" prefWidth="480.0" xmlns="http://javafx.com/javafx/19" xmlns:fx="http://javafx.com/fxml/1">
+<DialogPane maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="300.0" prefWidth="480.0" xmlns="http://javafx.com/javafx/19" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.filippo.progettotesina.ManagerProjectEditController">
     <header>
       <AnchorPane minHeight="0.0" minWidth="0.0" prefHeight="232.0" prefWidth="352.0">
          <children>
@@ -38,16 +39,19 @@
                   <Label text="Data di nascita" GridPane.rowIndex="4" />
                   <Label text="Scadenza visita medica" GridPane.rowIndex="5" />
                   <Label text="Quota" GridPane.rowIndex="6" />
-                  <TextField GridPane.columnIndex="1" />
-                  <TextField GridPane.columnIndex="1" GridPane.rowIndex="1" />
-                  <TextField GridPane.columnIndex="1" GridPane.rowIndex="2" />
-                  <TextField GridPane.columnIndex="1" GridPane.rowIndex="3" />
-                  <DatePicker prefHeight="25.0" prefWidth="243.0" GridPane.columnIndex="1" GridPane.rowIndex="4" />
-                  <DatePicker prefHeight="25.0" prefWidth="237.0" GridPane.columnIndex="1" GridPane.rowIndex="5" />
+                  <TextField fx:id="firstNameField" GridPane.columnIndex="1" />
+                  <TextField fx:id="lastNameField" GridPane.columnIndex="1" GridPane.rowIndex="1" />
+                  <TextField fx:id="streetField" GridPane.columnIndex="1" GridPane.rowIndex="2" />
+                  <TextField fx:id="cityField" GridPane.columnIndex="1" GridPane.rowIndex="3" />
+                  <DatePicker fx:id="birthdayDatePicker" prefHeight="25.0" prefWidth="243.0" GridPane.columnIndex="1" GridPane.rowIndex="4" />
+                  <DatePicker fx:id="medicalExamExpiryDatePicker" prefHeight="25.0" prefWidth="237.0" GridPane.columnIndex="1" GridPane.rowIndex="5" />
                   <ButtonBar prefHeight="31.0" prefWidth="189.0" GridPane.columnIndex="1" GridPane.rowIndex="6">
                      <buttons>
-                        <RadioButton mnemonicParsing="false" text="Pagata" />
-                        <RadioButton mnemonicParsing="false" text="Da pagare" />
+                        <RadioButton fx:id="paidButton" mnemonicParsing="false" text="Pagata">
+                           <toggleGroup>
+                              <ToggleGroup fx:id="paymentStatusToggleGroup" />
+                           </toggleGroup></RadioButton>
+                        <RadioButton fx:id="dueButton" mnemonicParsing="false" selected="true" text="Da pagare" toggleGroup="$paymentStatusToggleGroup" />
                      </buttons>
                   </ButtonBar>
                </children>
