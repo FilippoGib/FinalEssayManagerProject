@@ -17,6 +17,13 @@ public class Person {
     private final ObjectProperty<LocalDate> medicalExamExpiryDate;
     private final BooleanProperty paidFees;
 
+    public Person() {
+        this(null, null);
+    }
+
+    public Person(String firstName, String lastName) {
+        this(firstName, lastName, "Random Street", "Nowhere", LocalDate.of(2000, 1, 1),LocalDate.of(2000, 1, 1),true);
+    }
     public Person(String firstName, String lastName, String street, String city, LocalDate birthday, LocalDate medicalExamExpiryDate, boolean paidFees) {
         this.firstName = new SimpleStringProperty(firstName);
         this.lastName = new SimpleStringProperty(lastName);

@@ -1,5 +1,8 @@
 package com.filippo.progettotesina;
 
+import com.fasterxml.jackson.core.type.TypeReference;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.event.ActionEvent;
@@ -7,10 +10,12 @@ import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.control.*;
 import javafx.scene.control.cell.PropertyValueFactory;
+import javafx.stage.FileChooser;
 import javafx.stage.Modality;
 
-import java.io.IOException;
+import java.io.*;
 import java.time.LocalDate;
+import java.util.List;
 import java.util.NoSuchElementException;
 import java.util.Optional;
 
@@ -46,6 +51,7 @@ public class ManagerProjectController {
     @FXML
     private Label streetLabel;
 
+
     public void initialize() {
         // Initialize the person table with the two columns.
         firstNameColumn.setCellValueFactory(new PropertyValueFactory<>("firstName"));
@@ -58,13 +64,15 @@ public class ManagerProjectController {
         // Listen for selection changes and show the person details when changed.
         personTable.getSelectionModel().selectedItemProperty().addListener((observable, oldValue, newValue) -> showPersonDetails(newValue));
     }
+
     public ObservableList<Person> getPersonData() {
 
         ObservableList<Person> persons = FXCollections.observableArrayList();
-        persons.add(new Person("Filippo", "Gibertini","via burchi","Modena", LocalDate.of(2002, 4, 18),LocalDate.of(2024,4,29),true));
+        persons.add(new Person("Filippo", "Gibertini", "via burchi", "Modena", LocalDate.of(2002, 4, 18), LocalDate.of(2024, 4, 29), true));
 
         return persons;
     }
+
     private void showPersonDetails(Person person) {
         if (person != null) {
             firstNameLabel.setText(person.getFirstName());
@@ -84,11 +92,11 @@ public class ManagerProjectController {
             paidFeesLabel.setText("");
         }
     }
-    public String getStringPaidFees(boolean paidFees){
-        if(paidFees){
+
+    public String getStringPaidFees(boolean paidFees) {
+        if (paidFees) {
             return "saldata";
-        }
-        else return "da saldare";
+        } else return "da saldare";
     }
 
     int selectedIndex() {
@@ -109,16 +117,18 @@ public class ManagerProjectController {
         alert.setContentText("Per favore seleziona una persona da cancellare");
         alert.showAndWait();
     }
+
     @FXML
-    private void handleAbout () {
+    private void handleAbout() {
         Alert alert = new Alert(Alert.AlertType.INFORMATION);
         alert.setTitle("Address Application");
         alert.setHeaderText("Informazioni");
         alert.setContentText("Autore: Filippo Gibertini");
         alert.showAndWait();
     }
+
     @FXML
-    private void handleSupport () {
+    private void handleSupport() {
         Alert alert = new Alert(Alert.AlertType.INFORMATION);
         alert.setTitle("Address Application");
         alert.setHeaderText("Supporto");
@@ -129,8 +139,9 @@ public class ManagerProjectController {
 
     @FXML
     void handleClose(ActionEvent event) {
-
+        System.exit(0);
     }
+
     @FXML
     void handleExpiredMedicalExam(ActionEvent event) {
 
@@ -178,7 +189,7 @@ public class ManagerProjectController {
 
     @FXML
     void handleNewFile(ActionEvent event) {
-
+        personTable.getItems().clear();
     }
 
     @FXML
@@ -190,7 +201,7 @@ public class ManagerProjectController {
             ManagerProjectEditController controller = loader.getController();
 
             // Set an empty person into the controller
-            controller.setPerson(new Person("First Name", "Last Name", "Street", "City",LocalDate.now(), LocalDate.now(),true));
+            controller.setPerson(new Person("First Name", "Last Name", "Street", "City", LocalDate.now(), LocalDate.now(), true));
 
             // Create the dialog
             Dialog<ButtonType> dialog = new Dialog<>();
@@ -214,13 +225,41 @@ public class ManagerProjectController {
     }
 
     @FXML
-    void handleOpen(ActionEvent event) {
+    private void handleOpen() throws Exception{
+       // try {
+            FileChooser fileChooser = new FileChooser();
+            FileChooser.ExtensionFilter extFilter = new FileChooser.ExtensionFilter("JSON files (*.json)", "*.json");
+            fileChooser.getExtensionFilters().add(extFilter);
 
+            File file = fileChooser.showOpenDialog(null);
+            if (file != null) {
+                ObjectMapper mapper = new ObjectMapper();
+                mapper.registerModule(new JavaTimeModule());
+                List<Person> persons = mapper.readValue(file, new TypeReference<List<Person>>() {});
+                personTable.getItems().addAll(persons);
+            }
+       // } catch (IOException e) {
+       //     new Alert(Alert.AlertType.ERROR, "Impossibile caricare dati").showAndWait();
+     //   }
     }
 
-    @FXML
-    void handleSaveAs(ActionEvent event) {
 
+    @FXML
+    private void handleSaveAs() {
+        try {
+            FileChooser fileChooser = new FileChooser();
+            FileChooser.ExtensionFilter extFilter = new FileChooser.ExtensionFilter("JSON files (*.json)", "*.json");
+            fileChooser.getExtensionFilters().add(extFilter);
+
+            File file = fileChooser.showSaveDialog(null);
+            if (file != null) {
+                ObjectMapper mapper = new ObjectMapper();
+                mapper.registerModule(new JavaTimeModule());
+                mapper.writerWithDefaultPrettyPrinter().writeValue(file, personTable.getItems());
+            }
+        } catch (IOException e) {
+            new Alert(Alert.AlertType.ERROR, "Could not save data").showAndWait();
+        }
     }
 
 }
