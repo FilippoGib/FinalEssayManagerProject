@@ -15,6 +15,7 @@ public class ManagerProjectApplication extends Application {
         stage.setTitle("Academy Management");
         stage.setScene(scene);
         stage.show();
+        //commento per commit
     }
 
     public static void main(String[] args) {
