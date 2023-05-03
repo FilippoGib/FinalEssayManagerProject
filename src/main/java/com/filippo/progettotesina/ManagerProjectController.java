@@ -51,6 +51,8 @@ public class ManagerProjectController {
     @FXML
     private Label streetLabel;
 
+    private File file=null;
+
 
     public void initialize() {
         // Initialize the person table with the two columns.
@@ -226,21 +228,21 @@ public class ManagerProjectController {
 
     @FXML
     private void handleOpen() throws Exception{
-       // try {
+       try {
             FileChooser fileChooser = new FileChooser();
             FileChooser.ExtensionFilter extFilter = new FileChooser.ExtensionFilter("JSON files (*.json)", "*.json");
             fileChooser.getExtensionFilters().add(extFilter);
 
-            File file = fileChooser.showOpenDialog(null);
+            file = fileChooser.showOpenDialog(null);
             if (file != null) {
                 ObjectMapper mapper = new ObjectMapper();
                 mapper.registerModule(new JavaTimeModule());
                 List<Person> persons = mapper.readValue(file, new TypeReference<List<Person>>() {});
                 personTable.getItems().addAll(persons);
             }
-       // } catch (IOException e) {
-       //     new Alert(Alert.AlertType.ERROR, "Impossibile caricare dati").showAndWait();
-     //   }
+        } catch (IOException e) {
+           new Alert(Alert.AlertType.ERROR, "Impossibile caricare dati").showAndWait();
+      }
     }
 
 
@@ -251,13 +253,31 @@ public class ManagerProjectController {
             FileChooser.ExtensionFilter extFilter = new FileChooser.ExtensionFilter("JSON files (*.json)", "*.json");
             fileChooser.getExtensionFilters().add(extFilter);
 
-            File file = fileChooser.showSaveDialog(null);
+            file = fileChooser.showSaveDialog(null);
             if (file != null) {
                 ObjectMapper mapper = new ObjectMapper();
                 mapper.registerModule(new JavaTimeModule());
                 mapper.writerWithDefaultPrettyPrinter().writeValue(file, personTable.getItems());
             }
         } catch (IOException e) {
+            new Alert(Alert.AlertType.ERROR, "Could not save data").showAndWait();
+        }
+    }
+    @FXML
+    private void handleSave(){
+        try{
+
+            if (file != null) {
+                ObjectMapper mapper = new ObjectMapper();
+                mapper.registerModule(new JavaTimeModule());
+                mapper.writerWithDefaultPrettyPrinter().writeValue(file, personTable.getItems());
+            }
+            else {
+                new Alert(Alert.AlertType.ERROR, "Could not save data").showAndWait();
+            }
+
+        }
+        catch (IOException e){
             new Alert(Alert.AlertType.ERROR, "Could not save data").showAndWait();
         }
     }
