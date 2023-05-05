@@ -32,7 +32,7 @@ public class Person {
         this.birthday = new SimpleObjectProperty<>(birthday);
         this.medicalExamExpiryDate = new SimpleObjectProperty<>(medicalExamExpiryDate);
         this.paidFees = new SimpleBooleanProperty(paidFees);
-        //questo è il grande commento del faribus
+        //il commento del gibbus
     }
 
     public Person(Person person) {
