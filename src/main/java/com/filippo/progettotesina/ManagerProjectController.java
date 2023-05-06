@@ -14,10 +14,13 @@ import javafx.stage.FileChooser;
 import javafx.stage.Modality;
 
 import java.io.*;
+import java.sql.Date;
 import java.time.LocalDate;
-import java.util.List;
-import java.util.NoSuchElementException;
-import java.util.Optional;
+import java.time.ZoneId;
+import java.util.*;
+import java.sql.*;
+import com.zaxxer.hikari.HikariConfig;
+import com.zaxxer.hikari.HikariDataSource;
 
 public class ManagerProjectController {
 
@@ -53,6 +56,14 @@ public class ManagerProjectController {
 
     private File file=null;
 
+    public static final String JDBC_Driver_MySQL = "com.mysql.cj.jdbc.Driver";
+
+    public static final String JDBC_URL_MySQL = "jdbc:mysql://localhost:3306/people?user=common&password=common123456";
+
+    private ObservableList<Person> people;
+
+    private HikariDataSource dataSource;
+
 
     public void initialize() {
         // Initialize the person table with the two columns.
@@ -69,10 +80,36 @@ public class ManagerProjectController {
 
     public ObservableList<Person> getPersonData() {
 
-        ObservableList<Person> persons = FXCollections.observableArrayList();
-        persons.add(new Person("Filippo", "Gibertini", "via burchi", "Modena", LocalDate.of(2002, 4, 18), LocalDate.of(2024, 4, 29), true));
+        people = FXCollections.observableArrayList();
 
-        return persons;
+        dbConnection();
+
+        try {
+            Connection connection = dataSource.getConnection();
+            PreparedStatement getPeople = connection.prepareStatement("SELECT * FROM people");
+            ResultSet resultSet = getPeople.executeQuery();
+            while (resultSet.next()) {
+                    people.add(new Person(
+                            resultSet.getString("firstName"),
+                            resultSet.getString("lastName"),
+                            resultSet.getString("street"),
+                            resultSet.getString("city"),
+                            resultSet.getDate("birthday").toLocalDate(),
+                            resultSet.getDate("medicalExamExpiryDate").toLocalDate(),
+                            resultSet.getBoolean("paidFees")));}
+        } catch (SQLException e) {
+            new Alert(Alert.AlertType.ERROR, "Database Error").showAndWait();
+        }
+
+        return people;
+    }
+
+    private void dbConnection() {
+        HikariConfig config = new HikariConfig();
+        config.setDriverClassName(JDBC_Driver_MySQL);
+        config.setJdbcUrl(JDBC_URL_MySQL);
+        config.setLeakDetectionThreshold(2000);
+        dataSource = new HikariDataSource(config);
     }
 
     private void showPersonDetails(Person person) {
