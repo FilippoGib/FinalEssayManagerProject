@@ -1,6 +1,7 @@
 package com.filippo.progettotesina;
 
 import java.time.LocalDate;
+import java.time.ZoneId;
 import java.util.Date;
 
 import javafx.beans.property.BooleanProperty;
@@ -129,5 +130,11 @@ public class Person {
 
     public BooleanProperty paidFeesProperty() {
         return paidFees;
+    }
+
+    public Boolean isExpiredMedicalExam() {
+        Date dateMedicalExamExpiryDate = Date.from(this.medicalExamExpiryDate.getValue().atStartOfDay().atZone(ZoneId.systemDefault()).toInstant());
+        Date dateNow = Date.from(LocalDate.now().atStartOfDay().atZone(ZoneId.systemDefault()).toInstant());
+        return !dateNow.after(dateMedicalExamExpiryDate);
     }
 }
