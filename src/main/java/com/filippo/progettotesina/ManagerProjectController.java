@@ -23,6 +23,8 @@ import java.sql.*;
 import com.zaxxer.hikari.HikariConfig;
 import com.zaxxer.hikari.HikariDataSource;
 
+import static com.filippo.progettotesina.Person.getMaxID;
+
 public class ManagerProjectController {
 
     @FXML
@@ -63,7 +65,7 @@ public class ManagerProjectController {
 
     private ObservableList<Person> people;
 
-    private HikariDataSource dataSource;
+    public static HikariDataSource dataSource;
 
     public void initialize() {
         // Initialize the person table with the two columns.
@@ -89,7 +91,7 @@ public class ManagerProjectController {
             PreparedStatement getPeople = connection.prepareStatement("SELECT * FROM people");
             ResultSet resultSet = getPeople.executeQuery();
             while (resultSet.next()) {
-                people.add(new Person(resultSet.getString("firstName"), resultSet.getString("lastName"), resultSet.getString("street"), resultSet.getString("city"), resultSet.getDate("birthday").toLocalDate(), resultSet.getDate("medicalExamExpiryDate").toLocalDate(), resultSet.getBoolean("paidFees")));
+                people.add(new Person(resultSet.getInt("ID"), resultSet.getString("firstName"), resultSet.getString("lastName"), resultSet.getString("street"), resultSet.getString("city"), resultSet.getDate("birthday").toLocalDate(), resultSet.getDate("medicalExamExpiryDate").toLocalDate(), resultSet.getBoolean("paidFees")));
             }
         } catch (SQLException e) {
             new Alert(Alert.AlertType.ERROR, "Database Error").showAndWait();
@@ -101,14 +103,15 @@ public class ManagerProjectController {
     void insertDBPerson(Person person) {
         try {
             Connection connection = dataSource.getConnection();
-            PreparedStatement insertPerson = connection.prepareStatement("INSERT INTO people (firstName, lastName, street, city, birthday, medicalExamExpiryDate, paidFees) VALUES (?, ?, ?, ?, ?, ?, ?)");
-                insertPerson.setString(1, person.getFirstName());
-                insertPerson.setString(2, person.getLastName());
-                insertPerson.setString(3, person.getStreet());
-                insertPerson.setString(4, person.getCity());
-                insertPerson.setDate(5, Date.valueOf(person.getBirthday()));
-                insertPerson.setDate(6, Date.valueOf(person.getMedicalExamExpiryDate()));
-                insertPerson.setBoolean(7, person.isPaidFees());
+            PreparedStatement insertPerson = connection.prepareStatement("INSERT INTO people (ID, firstName, lastName, street, city, birthday, medicalExamExpiryDate, paidFees) VALUES (?, ?, ?, ?, ?, ?, ?, ?)");
+                insertPerson.setInt(1, getMaxID() + 1);
+                insertPerson.setString(2, person.getFirstName());
+                insertPerson.setString(3, person.getLastName());
+                insertPerson.setString(4, person.getStreet());
+                insertPerson.setString(5, person.getCity());
+                insertPerson.setDate(6, Date.valueOf(person.getBirthday()));
+                insertPerson.setDate(7, Date.valueOf(person.getMedicalExamExpiryDate()));
+                insertPerson.setBoolean(8, person.isPaidFees());
             insertPerson.executeUpdate();
         } catch (SQLException e) {
             new Alert(Alert.AlertType.ERROR, "Database Error").showAndWait();
@@ -251,7 +254,9 @@ public class ManagerProjectController {
             ManagerProjectEditController controller = loader.getController();
 
             // Set an empty person into the controller
-            controller.setPerson(new Person("First Name", "Last Name", "Street", "City", LocalDate.now(), LocalDate.now(), true));
+            controller.setPerson(new Person(getMaxID() + 1, "First Name", "Last Name", "Street", "City",
+                    LocalDate.now(),
+                    LocalDate.now(), true));
 
             // Create the dialog
             Dialog<ButtonType> dialog = new Dialog<>();
