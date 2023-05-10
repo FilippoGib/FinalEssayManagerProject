@@ -34,8 +34,6 @@ public class ManagerProjectEditController {
         medicalExamExpiryDatePicker.valueProperty().addListener((observable, oldValue, newValue) -> person.medicalExamExpiryDateProperty().set(newValue));
 
 
-
-        // Add a listener to the ToggleGroup to update the payment status when the selection changes
         paymentStatusToggleGroup.selectedToggleProperty().addListener((observable, oldValue, newValue) -> {
             if (newValue == paidButton) {
                 person.setPaidFees(true);

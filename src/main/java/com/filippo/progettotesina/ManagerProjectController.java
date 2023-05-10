@@ -204,6 +204,16 @@ public class ManagerProjectController {
     void handleDeletePerson(ActionEvent event) {
         try {
             int selectedIndex = selectedIndex();
+
+            try {
+                Connection connection = dataSource.getConnection();
+                PreparedStatement deletePerson = connection.prepareStatement("DELETE FROM people where ID=?");
+                deletePerson.setInt(1, personTable.getItems().get(selectedIndex).getID());
+                deletePerson.executeUpdate();
+            } catch (SQLException e) {
+                new Alert(Alert.AlertType.ERROR, "Database Error").showAndWait();
+            }
+
             personTable.getItems().remove(selectedIndex);
         } catch (NoSuchElementException e) {
             showNoPersonSelectedAlert();
@@ -282,21 +292,21 @@ public class ManagerProjectController {
 
     @FXML
     private void handleOpen() throws Exception {
-        try {
-            FileChooser fileChooser = new FileChooser();
-            FileChooser.ExtensionFilter extFilter = new FileChooser.ExtensionFilter("JSON files (*.json)", "*.json");
-            fileChooser.getExtensionFilters().add(extFilter);
+         try {
+        FileChooser fileChooser = new FileChooser();
+        FileChooser.ExtensionFilter extFilter = new FileChooser.ExtensionFilter("JSON files (*.json)", "*.json");
+        fileChooser.getExtensionFilters().add(extFilter);
 
-            file = fileChooser.showOpenDialog(null);
-            if (file != null) {
-                ObjectMapper mapper = new ObjectMapper();
-                mapper.registerModule(new JavaTimeModule());
-                List<Person> persons = mapper.readValue(file, new TypeReference<List<Person>>() {
-                });
-                personTable.getItems().addAll(persons);
-            }
-        } catch (IOException e) {
-            new Alert(Alert.AlertType.ERROR, "Impossibile caricare dati").showAndWait();
+        file = fileChooser.showOpenDialog(null);
+        if (file != null) {
+            ObjectMapper mapper = new ObjectMapper();
+            mapper.registerModule(new JavaTimeModule());
+            List<Person> persons = mapper.readValue(file, new TypeReference<List<Person>>() {
+            });
+            personTable.getItems().addAll(persons);
+        }
+         } catch (IOException e) {
+        new Alert(Alert.AlertType.ERROR, "Impossibile caricare dati").showAndWait();
         }
     }
 
@@ -327,7 +337,7 @@ public class ManagerProjectController {
                 mapper.registerModule(new JavaTimeModule());
                 mapper.writerWithDefaultPrettyPrinter().writeValue(file, personTable.getItems());
             } else {
-                new Alert(Alert.AlertType.ERROR, "Could not save data").showAndWait();
+                handleSaveAs();
             }
         } catch (IOException e) {
             new Alert(Alert.AlertType.ERROR, "Could not save data").showAndWait();
