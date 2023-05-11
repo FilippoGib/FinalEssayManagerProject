@@ -8,8 +8,10 @@ import javafx.collections.ObservableList;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
+import javafx.scene.Scene;
 import javafx.scene.control.*;
 import javafx.scene.control.cell.PropertyValueFactory;
+import javafx.scene.layout.StackPane;
 import javafx.stage.FileChooser;
 import javafx.stage.Modality;
 
@@ -22,6 +24,7 @@ import java.sql.*;
 
 import com.zaxxer.hikari.HikariConfig;
 import com.zaxxer.hikari.HikariDataSource;
+import javafx.stage.Stage;
 
 import static com.filippo.progettotesina.Person.getMaxID;
 
@@ -197,8 +200,26 @@ public class ManagerProjectController {
 
     @FXML
     void handleExpiredMedicalExam(ActionEvent event) {
+        try {
+            FXMLLoader loader = new FXMLLoader();
+            loader.setLocation(getClass().getResource("ManagerProject-Announcement-view.fxml"));
+            TabPane view = loader.load();
+            ManagerProjectAnnouncementController controller = loader.getController();
 
+            Scene scene = new Scene(view);
+            Stage stage = new Stage();
+            stage.setTitle("Avvisi");
+            stage.setScene(scene);
+            stage.show();
+        }
+        catch(IOException e){
+            e.printStackTrace();
+        }
     }
+
+
+
+
 
     @FXML
     void handleDeletePerson(ActionEvent event) {
@@ -210,6 +231,8 @@ public class ManagerProjectController {
                 PreparedStatement deletePerson = connection.prepareStatement("DELETE FROM people where ID=?");
                 deletePerson.setInt(1, personTable.getItems().get(selectedIndex).getID());
                 deletePerson.executeUpdate();
+
+
             } catch (SQLException e) {
                 new Alert(Alert.AlertType.ERROR, "Database Error").showAndWait();
             }

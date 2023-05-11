@@ -20,7 +20,7 @@
    <top>
       <MenuBar BorderPane.alignment="CENTER">
         <menus>
-          <Menu mnemonicParsing="false" text="File">
+            <Menu mnemonicParsing="false" text="File">
                <items>
                   <MenuItem mnemonicParsing="false" onAction="#handleNewFile" text="Nuovo..." />
                   <MenuItem mnemonicParsing="false" onAction="#handleSave" text="Salva" />
@@ -28,11 +28,10 @@
                   <MenuItem mnemonicParsing="false" onAction="#handleClose" text="Chiudi" />
                   <MenuItem mnemonicParsing="false" onAction="#handleOpen" text="Apri..." />
                </items>
-          </Menu>
+            </Menu>
             <Menu mnemonicParsing="false" text="Avvisi">
                <items>
-                  <MenuItem mnemonicParsing="false" onAction="#handleExpiredMedicalExam" text="Visite mediche scadute" />
-                  <MenuItem mnemonicParsing="false" onAction="#handleNotPaidFees" text="Quote non saldate" />
+                  <MenuItem mnemonicParsing="false" onAction="#handleExpiredMedicalExam" text="Apri scheda" />
                </items>
             </Menu>
             <Menu mnemonicParsing="false" text="Aiuto">
