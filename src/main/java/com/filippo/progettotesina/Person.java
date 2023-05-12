@@ -145,11 +145,11 @@ public class Person {
         return paidFees;
     }
 
-    public Boolean isExpiredMedicalExam() {
+   /* public Boolean isExpiredMedicalExam() {
         Date dateMedicalExamExpiryDate = Date.from(this.medicalExamExpiryDate.getValue().atStartOfDay().atZone(ZoneId.systemDefault()).toInstant());
         Date dateNow = Date.from(LocalDate.now().atStartOfDay().atZone(ZoneId.systemDefault()).toInstant());
         return dateNow.after(dateMedicalExamExpiryDate);
-    }
+    }*/
 
     public static int getMaxID() {
         int maxID = 0;

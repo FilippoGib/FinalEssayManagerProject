@@ -16,11 +16,14 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.time.LocalDate;
+import java.time.ZoneId;
+import java.util.Date;
 import java.util.NoSuchElementException;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
 public class ManagerProjectAnnouncementController {
+    //the next four attributes are for the first view
     @FXML
     private TableView<Person> personTable;
     @FXML
@@ -29,6 +32,16 @@ public class ManagerProjectAnnouncementController {
     private TableColumn<Person, String> lastNameColumn;
     @FXML
     private TableColumn<Person, String> expiredDateColumn;
+
+    //the next four attributes are for the second view
+    @FXML
+    private TableView<Person> personFeesTable;
+    @FXML
+    private TableColumn<Person, String> firstNameFeesColumn;
+    @FXML
+    private TableColumn<Person, String> lastNameFeesColumn;
+    @FXML
+    private TableColumn<Person, String> dueFeesColumn;
     private ObservableList<Person> people;
 
     public static HikariDataSource dataSource;
@@ -39,14 +52,22 @@ public class ManagerProjectAnnouncementController {
 
 
     public void initialize(){
-        // Initialize the person table with the two columns.
+        // Initialize the person table with the three columns.
         firstNameColumn.setCellValueFactory(new PropertyValueFactory<>("firstName"));
         lastNameColumn.setCellValueFactory(new PropertyValueFactory<>("lastName"));
         expiredDateColumn.setCellValueFactory(new PropertyValueFactory<>("medicalExamExpiryDate"));
 
-        dbConnection();
-        personTable.setItems(getPersonData().stream().filter(p->p.isExpiredMedicalExam()).collect(Collectors.toCollection(FXCollections::observableArrayList)));
+        // Initialize the personFees table with the three columns.
+        firstNameFeesColumn.setCellValueFactory(new PropertyValueFactory<>("firstName"));
+        lastNameFeesColumn.setCellValueFactory(new PropertyValueFactory<>("lastName"));
+        dueFeesColumn.setCellValueFactory(new PropertyValueFactory<>("paidFees"));
 
+
+        dbConnection();
+        personTable.setItems(getPersonData().stream().filter(p->isExpiredMedicalExam(p))
+                .collect(Collectors.toCollection(FXCollections::observableArrayList)));
+        personFeesTable.setItems(getPersonData().stream().filter(p->!p.isPaidFees())
+                .collect(Collectors.toCollection(FXCollections::observableArrayList)));
 
 
     }
@@ -73,5 +94,10 @@ public class ManagerProjectAnnouncementController {
         config.setJdbcUrl(JDBC_URL_MySQL);
         config.setLeakDetectionThreshold(2000);
         dataSource = new HikariDataSource(config);
+    }
+    public Boolean isExpiredMedicalExam(Person person) {
+        Date dateMedicalExamExpiryDate = Date.from(person.getMedicalExamExpiryDate().atStartOfDay().atZone(ZoneId.systemDefault()).toInstant());
+        Date dateNow = Date.from(LocalDate.now().atStartOfDay().atZone(ZoneId.systemDefault()).toInstant());
+        return dateNow.after(dateMedicalExamExpiryDate);
     }
 }
