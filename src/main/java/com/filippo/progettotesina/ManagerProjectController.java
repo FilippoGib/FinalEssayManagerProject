@@ -21,6 +21,8 @@ import java.time.LocalDate;
 import java.time.ZoneId;
 import java.util.*;
 import java.sql.*;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import com.zaxxer.hikari.HikariConfig;
 import com.zaxxer.hikari.HikariDataSource;
@@ -117,6 +119,23 @@ public class ManagerProjectController {
                 insertPerson.setDate(6, Date.valueOf(person.getBirthday()));
                 insertPerson.setDate(7, Date.valueOf(person.getMedicalExamExpiryDate()));
                 insertPerson.setBoolean(8, person.isPaidFees());
+            insertPerson.executeUpdate();
+        } catch (SQLException e) {
+            new Alert(Alert.AlertType.ERROR, "Database Error").showAndWait();
+        }
+    }
+    void insertDBPersonFromFile(Person person) {
+        try {
+            Connection connection = dataSource.getConnection();
+            PreparedStatement insertPerson = connection.prepareStatement("INSERT INTO people (ID, firstName, lastName, street, city, birthday, medicalExamExpiryDate, paidFees) VALUES (?, ?, ?, ?, ?, ?, ?, ?)");
+            insertPerson.setInt(1, person.getID());
+            insertPerson.setString(2, person.getFirstName());
+            insertPerson.setString(3, person.getLastName());
+            insertPerson.setString(4, person.getStreet());
+            insertPerson.setString(5, person.getCity());
+            insertPerson.setDate(6, Date.valueOf(person.getBirthday()));
+            insertPerson.setDate(7, Date.valueOf(person.getMedicalExamExpiryDate()));
+            insertPerson.setBoolean(8, person.isPaidFees());
             insertPerson.executeUpdate();
         } catch (SQLException e) {
             new Alert(Alert.AlertType.ERROR, "Database Error").showAndWait();
@@ -347,9 +366,19 @@ public class ManagerProjectController {
         if (file != null) {
             ObjectMapper mapper = new ObjectMapper();
             mapper.registerModule(new JavaTimeModule());
-            List<Person> persons = mapper.readValue(file, new TypeReference<List<Person>>() {
+            List<Person> persons = mapper.readValue(file, new TypeReference<List<Person>>() { //people in the json file
             });
-            personTable.getItems().addAll(persons);
+            //System.out.println(persons);
+            List <Person> persons_distinct= personTable.getItems().stream().collect(Collectors.toList()); //people in the table
+            //System.out.println(persons_distinct);
+            List<Person> diff = persons.stream().filter(e->!persons_distinct.contains(e)).collect(Collectors.toList()); //difference
+            //System.out.println(diff);
+            personTable.getItems().addAll(diff);
+
+            for(Person p : diff){
+                insertDBPersonFromFile(p);
+            }
+
         }
          } catch (IOException e) {
         new Alert(Alert.AlertType.ERROR, "Impossibile caricare dati").showAndWait();
