@@ -66,9 +66,9 @@ public class ManagerProjectAnnouncementController {
         dbConnection();
         personTable.setItems(getPersonData().stream().filter(p->isExpiredMedicalExam(p))
                 .collect(Collectors.toCollection(FXCollections::observableArrayList)));
+
         personFeesTable.setItems(getPersonData().stream().filter(p->!p.isPaidFees())
                 .collect(Collectors.toCollection(FXCollections::observableArrayList)));
-
 
     }
     public ObservableList<Person> getPersonData() {

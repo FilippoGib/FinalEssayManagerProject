@@ -83,6 +83,8 @@ public class ManagerProjectController {
 
         // Listen for selection changes and show the person details when changed.
         personTable.getSelectionModel().selectedItemProperty().addListener((observable, oldValue, newValue) -> showPersonDetails(newValue));
+
+
     }
 
     public ObservableList<Person> getPersonData() {
@@ -117,6 +119,25 @@ public class ManagerProjectController {
                 insertPerson.setBoolean(8, person.isPaidFees());
             insertPerson.executeUpdate();
         } catch (SQLException e) {
+            new Alert(Alert.AlertType.ERROR, "Database Error").showAndWait();
+        }
+    }
+    void editDBPerson(Person person){
+        try{
+            Connection connection = dataSource.getConnection();
+            PreparedStatement editPerson =connection.prepareStatement("UPDATE people SET ID=?,firstName=?,lastName=?,street=?,city=?,birthday=?,medicalExamExpiryDate=?,paidFees=? WHERE ID=? ");
+            editPerson.setInt(1, getMaxID());
+            editPerson.setString(2, person.getFirstName());
+            editPerson.setString(3, person.getLastName());
+            editPerson.setString(4, person.getStreet());
+            editPerson.setString(5, person.getCity());
+            editPerson.setDate(6, Date.valueOf(person.getBirthday()));
+            editPerson.setDate(7, Date.valueOf(person.getMedicalExamExpiryDate()));
+            editPerson.setBoolean(8, person.isPaidFees());
+            editPerson.setInt(9, getMaxID());
+            editPerson.executeUpdate();
+
+        } catch(SQLException e){
             new Alert(Alert.AlertType.ERROR, "Database Error").showAndWait();
         }
     }
@@ -265,6 +286,7 @@ public class ManagerProjectController {
             Optional<ButtonType> clickedButton = dialog.showAndWait();
             if (clickedButton.orElse(ButtonType.CANCEL) == ButtonType.OK) {
                 personTable.getItems().set(selectedIndex, controller.getPerson());
+                editDBPerson(controller.getPerson());
             }
         } catch (NoSuchElementException e) {
             showNoPersonSelectedAlert();
@@ -287,9 +309,10 @@ public class ManagerProjectController {
             ManagerProjectEditController controller = loader.getController();
 
             // Set an empty person into the controller
-            controller.setPerson(new Person(getMaxID() + 1, "First Name", "Last Name", "Street", "City",
+           controller.setPerson(new Person(getMaxID() + 1, "First Name", "Last Name", "Street", "City",
                     LocalDate.now(),
-                    LocalDate.now(), true));
+                    LocalDate.now(), true)
+           );
 
             // Create the dialog
             Dialog<ButtonType> dialog = new Dialog<>();

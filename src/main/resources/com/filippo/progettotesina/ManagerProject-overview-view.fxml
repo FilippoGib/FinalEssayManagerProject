@@ -22,11 +22,10 @@
         <menus>
             <Menu mnemonicParsing="false" text="File">
                <items>
-                  <MenuItem mnemonicParsing="false" onAction="#handleNewFile" text="Nuovo..." />
+                  <MenuItem mnemonicParsing="false" onAction="#handleOpen" text="Apri..." />
                   <MenuItem mnemonicParsing="false" onAction="#handleSave" text="Salva" />
                   <MenuItem mnemonicParsing="false" onAction="#handleSaveAs" text="Salva con nome..." />
                   <MenuItem mnemonicParsing="false" onAction="#handleClose" text="Chiudi" />
-                  <MenuItem mnemonicParsing="false" onAction="#handleOpen" text="Apri..." />
                </items>
             </Menu>
             <Menu mnemonicParsing="false" text="Avvisi">
@@ -46,7 +45,7 @@
    <center>
       <SplitPane dividerPositions="0.36216517857142866" prefHeight="160.0" prefWidth="200.0" BorderPane.alignment="CENTER">
         <items>
-            <TableView fx:id="personTable" prefHeight="200.0" prefWidth="200.0">
+            <TableView fx:id="personTable" prefHeight="329.0" prefWidth="213.0">
               <columns>
                 <TableColumn fx:id="firstNameColumn" prefWidth="75.0" text="Nome" />
                 <TableColumn fx:id="lastNameColumn" prefWidth="75.0" text="Cognome" />
