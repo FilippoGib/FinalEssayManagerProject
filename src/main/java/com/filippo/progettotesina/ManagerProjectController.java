@@ -28,6 +28,7 @@ import com.zaxxer.hikari.HikariConfig;
 import com.zaxxer.hikari.HikariDataSource;
 import javafx.stage.Stage;
 
+import static com.filippo.progettotesina.Person.freeID;
 import static com.filippo.progettotesina.Person.getMaxID;
 
 public class ManagerProjectController {
@@ -111,7 +112,7 @@ public class ManagerProjectController {
         try {
             Connection connection = dataSource.getConnection();
             PreparedStatement insertPerson = connection.prepareStatement("INSERT INTO people (ID, firstName, lastName, street, city, birthday, medicalExamExpiryDate, paidFees) VALUES (?, ?, ?, ?, ?, ?, ?, ?)");
-                insertPerson.setInt(1, getMaxID() + 1);
+                insertPerson.setInt(1, freeID());
                 insertPerson.setString(2, person.getFirstName());
                 insertPerson.setString(3, person.getLastName());
                 insertPerson.setString(4, person.getStreet());
@@ -124,11 +125,22 @@ public class ManagerProjectController {
             new Alert(Alert.AlertType.ERROR, "Database Error").showAndWait();
         }
     }
+    void insertDBFee(Fee fee){
+        try{
+            Connection connection = dataSource.getConnection();
+            PreparedStatement insertFee= connection.prepareStatement("INSERT INTO fee(expiry,amount) VALUES (?,?)");
+                insertFee.setDate(1,Date.valueOf(fee.getExpiry()));
+                insertFee.setDouble(2,fee.getAmount());
+            insertFee.executeUpdate();
+        }  catch (SQLException e) {
+            new Alert(Alert.AlertType.ERROR, "Database Error").showAndWait();
+        }
+    }
     void insertDBPersonFromFile(Person person) {
         try {
             Connection connection = dataSource.getConnection();
             PreparedStatement insertPerson = connection.prepareStatement("INSERT INTO people (ID, firstName, lastName, street, city, birthday, medicalExamExpiryDate, paidFees) VALUES (?, ?, ?, ?, ?, ?, ?, ?)");
-            insertPerson.setInt(1, person.getID());
+            insertPerson.setInt(1, getMaxID()+1);
             insertPerson.setString(2, person.getFirstName());
             insertPerson.setString(3, person.getLastName());
             insertPerson.setString(4, person.getStreet());
@@ -328,7 +340,7 @@ public class ManagerProjectController {
             ManagerProjectEditController controller = loader.getController();
 
             // Set an empty person into the controller
-           controller.setPerson(new Person(getMaxID() + 1, "First Name", "Last Name", "Street", "City",
+           controller.setPerson(new Person(getMaxID() + 1, "", "", "", "",
                     LocalDate.now(),
                     LocalDate.now(), true)
            );
@@ -416,6 +428,34 @@ public class ManagerProjectController {
             }
         } catch (IOException e) {
             new Alert(Alert.AlertType.ERROR, "Could not save data").showAndWait();
+        }
+    }
+    @FXML
+    private void handleNewFee(ActionEvent event){
+        try {
+            FXMLLoader loader = new FXMLLoader();
+            loader.setLocation(getClass().getResource("ManagerProject-fee-view.fxml"));
+            DialogPane view = loader.load();
+            ManagerProjectFeeController controller = loader.getController();
+
+            // Set an empty fee into the controller
+            controller.setFee(new Fee(0, 0.00,LocalDate.now()));
+
+            // Create the dialog
+            Dialog<ButtonType> dialog = new Dialog<>();
+            dialog.setTitle("Nuova Quota");
+            dialog.initModality(Modality.WINDOW_MODAL);
+            dialog.setDialogPane(view);
+
+            // Show the dialog and wait until the user closes it
+            Optional<ButtonType> clickedButton = dialog.showAndWait();
+            if (clickedButton.orElse(ButtonType.CANCEL) == ButtonType.APPLY) {
+                System.out.println("chiamo il metodo insertDBFee");
+                //i just need to insert the fee into the DB
+                insertDBFee(controller.getFee());
+            }
+        } catch (IOException e) {
+            e.printStackTrace();
         }
     }
 }

@@ -166,6 +166,30 @@ public class Person {
         }
         return maxID;
     }
+    public static int freeID(){
+        int freeID = 0;
+        try {
+            Connection connection = dataSource.getConnection();
+            PreparedStatement getMaxID = connection.prepareStatement("SELECT ID FROM people WHERE ID is not NULL ORDER BY ID");
+            ResultSet resultSet = getMaxID.executeQuery();
+            resultSet.next();
+            int i=0;
+            freeID = resultSet.getInt(1);
+            while(true){
+                if(freeID==i){
+                    resultSet.next();
+                    freeID = resultSet.getInt(1);
+                    i++;
+                }
+                break;
+            }
+            return i;
+        } catch (SQLException e) {
+            new Alert(Alert.AlertType.ERROR, "Database Error").showAndWait();
+        }
+        return freeID;
+    }
+
 
     @Override
     public boolean equals(Object o) {

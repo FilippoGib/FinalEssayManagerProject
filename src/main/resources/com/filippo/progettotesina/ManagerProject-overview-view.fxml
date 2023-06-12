@@ -39,6 +39,11 @@
                   <MenuItem mnemonicParsing="false" onAction="#handleSupport" text="Supporto" />
                </items>
             </Menu>
+            <Menu mnemonicParsing="false" text="Nuova quota">
+               <items>
+                  <MenuItem mnemonicParsing="false" onAction="#handleNewFee" text="Inserisci" />
+               </items>
+            </Menu>
         </menus>
       </MenuBar>
    </top>

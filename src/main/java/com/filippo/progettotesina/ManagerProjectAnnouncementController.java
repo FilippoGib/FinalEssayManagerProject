@@ -71,6 +71,7 @@ public class ManagerProjectAnnouncementController {
                 .collect(Collectors.toCollection(FXCollections::observableArrayList)));
 
     }
+
     public ObservableList<Person> getPersonData() {
 
         people = FXCollections.observableArrayList();
