@@ -450,7 +450,7 @@ public class ManagerProjectController {
             // Show the dialog and wait until the user closes it
             Optional<ButtonType> clickedButton = dialog.showAndWait();
             if (clickedButton.orElse(ButtonType.CANCEL) == ButtonType.APPLY) {
-                System.out.println("chiamo il metodo insertDBFee");
+                //System.out.println("chiamo il metodo insertDBFee");
                 //i just need to insert the fee into the DB
                 insertDBFee(controller.getFee());
             }
