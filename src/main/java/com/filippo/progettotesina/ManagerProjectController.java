@@ -105,7 +105,7 @@ public class ManagerProjectController {
                 feesList.add(new Fee(resultSet.getInt("ID"), resultSet.getBigDecimal("amount").toBigInteger().doubleValue(),resultSet.getDate("expiry").toLocalDate() ,resultSet.getBoolean("expired")));
             }
             //filter the fees that are recorded as not expired but actually are
-            feesList.stream().filter(fee -> fee.getExpiry().isBefore(LocalDate.now())).collect(Collectors.toList());
+            feesList= feesList.stream().filter(fee -> fee.getExpiry().isBefore(LocalDate.now())).collect(Collectors.toCollection(FXCollections::observableArrayList));
             if(feesList.isEmpty()) return;
             //get all the people that didn't pay
             PreparedStatement getPeopleNotPaid= connection.prepareStatement("select * from people where paidFees = 0");
