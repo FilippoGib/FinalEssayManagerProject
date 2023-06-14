@@ -2,6 +2,7 @@ package com.filippo.progettotesina;
 
 import com.zaxxer.hikari.HikariConfig;
 import com.zaxxer.hikari.HikariDataSource;
+import javafx.beans.property.SimpleStringProperty;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.fxml.FXML;
@@ -70,6 +71,12 @@ public class ManagerProjectAnnouncementController {
         personFeesTable.setItems(getPersonData().stream().filter(p->!p.isPaidFees())
                 .collect(Collectors.toCollection(FXCollections::observableArrayList)));
 
+        dueFeesColumn.setCellValueFactory(cellData -> {
+            Person person = cellData.getValue();
+            int unpaidFeesCount = getUnpaidFeesCount(person.getID());
+            return new SimpleStringProperty(String.valueOf(unpaidFeesCount)); //Current fee included
+        });
+
     }
 
     public ObservableList<Person> getPersonData() {
@@ -100,5 +107,19 @@ public class ManagerProjectAnnouncementController {
         Date dateMedicalExamExpiryDate = Date.from(person.getMedicalExamExpiryDate().atStartOfDay().atZone(ZoneId.systemDefault()).toInstant());
         Date dateNow = Date.from(LocalDate.now().atStartOfDay().atZone(ZoneId.systemDefault()).toInstant());
         return dateNow.after(dateMedicalExamExpiryDate);
+    }
+    private int getUnpaidFeesCount(int personId) {
+        int unpaidFeesCount = 0;
+        try (Connection connection = dataSource.getConnection();
+             PreparedStatement statement = connection.prepareStatement("SELECT COUNT(*) FROM fee_not_paid WHERE person_id = ?")) {
+            statement.setInt(1, personId);
+            ResultSet resultSet = statement.executeQuery();
+            if (resultSet.next()) {
+                unpaidFeesCount = resultSet.getInt(1);
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return unpaidFeesCount;
     }
 }

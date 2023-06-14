@@ -18,10 +18,25 @@ public class Fee {
     private DoubleProperty amount;
     private ObjectProperty<LocalDate> expiry;
 
-    public Fee(int ID, double amount, LocalDate expiry) {
+    private BooleanProperty expired;
+
+    public Fee(int ID, double amount, LocalDate expiry,boolean expired) {
         this.ID = ID;
         this.amount = new SimpleDoubleProperty(amount);
         this.expiry = new SimpleObjectProperty<>(expiry);
+        this.expired=new SimpleBooleanProperty(expired);
+    }
+
+    public boolean isExpired() {
+        return expired.get();
+    }
+
+    public BooleanProperty expiredProperty() {
+        return expired;
+    }
+
+    public void setExpired(boolean expired) {
+        this.expired.set(expired);
     }
 
     public int getID() {

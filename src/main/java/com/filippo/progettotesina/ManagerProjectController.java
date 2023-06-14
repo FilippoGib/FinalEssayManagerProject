@@ -25,6 +25,7 @@ import java.time.LocalDate;
 import java.util.List;
 import java.util.NoSuchElementException;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 import com.zaxxer.hikari.HikariConfig;
 import com.zaxxer.hikari.HikariDataSource;
@@ -90,8 +91,45 @@ public class ManagerProjectController {
 
         // Listen for selection changes and show the person details when changed.
         personTable.getSelectionModel().selectedItemProperty().addListener((observable, oldValue, newValue) -> showPersonDetails(newValue));
+        //the following code checks if there are some fees that have expired since the last time we opened the program
+        checkExpiredFees();
+    }
+    void checkExpiredFees(){
+        ObservableList<Fee> feesList=FXCollections.observableArrayList();
+        ObservableList<Person> personList=FXCollections.observableArrayList();
+        try{
+            Connection connection = dataSource.getConnection();
+            PreparedStatement getExpiredFees= connection.prepareStatement("select * from fee where expired = 0"); //fees not expired
+            ResultSet resultSet= getExpiredFees.executeQuery();
+            while (resultSet.next()) {
+                feesList.add(new Fee(resultSet.getInt("ID"), resultSet.getBigDecimal("amount").toBigInteger().doubleValue(),resultSet.getDate("expiry").toLocalDate() ,resultSet.getBoolean("expired")));
+            }
+            //filter the fees that are recorded as not expired but actually are
+            feesList.stream().filter(fee -> fee.getExpiry().isBefore(LocalDate.now())).collect(Collectors.toList());
+            if(feesList.isEmpty()) return;
+            //get all the people that didn't pay
+            PreparedStatement getPeopleNotPaid= connection.prepareStatement("select * from people where paidFees = 0");
+            ResultSet personSet=getPeopleNotPaid.executeQuery();
+            while (personSet.next()) {
+                personList.add(new Person(personSet.getInt("ID"), personSet.getString("firstName"), personSet.getString("lastName"), personSet.getString("street"), personSet.getString("city"), personSet.getDate("birthday").toLocalDate(), personSet.getDate("medicalExamExpiryDate").toLocalDate(), personSet.getBoolean("paidFees")));
+            }
+            for(Person p : personList){
+                for(Fee f : feesList) {
+                    PreparedStatement insert=connection.prepareStatement("INSERT INTO fee_not_paid(person_id,fee_id) VALUES (?,?)");
+                        insert.setInt(1,p.getID());
+                        insert.setInt(2,f.getID());
+                    insert.executeUpdate();
+                }
+            }
+            PreparedStatement update =connection.prepareStatement("update fee set expired =1 where expiry < CURRENT_DATE()");
+            update.executeUpdate();
+
+        }catch (SQLException e){
+            new Alert(Alert.AlertType.ERROR, "Database Error").showAndWait();
+        }
 
     }
+
 
     public ObservableList<Person> getPersonData() {
 
@@ -151,7 +189,7 @@ public class ManagerProjectController {
                     int feeId = setFee.getInt("id");
 
                     // Create a new Fee object
-                    fee = new Fee(feeId, amount.toBigInteger().doubleValue(), expiryDate.toLocalDate()); //this is the next coming up fee
+                    fee = new Fee(feeId, amount.toBigInteger().doubleValue(), expiryDate.toLocalDate(),false); //this is the next coming up fee
                 }
                 if(fee!=null){ //create a new record in the fee_not_paid table
                     PreparedStatement insertFeeNotPaid = connection.prepareStatement("INSERT INTO fee_not_paid(person_id,fee_id) VALUES (?,?)");
@@ -359,10 +397,14 @@ public class ManagerProjectController {
 
             try {
                 Connection connection = dataSource.getConnection();
+                //I remove the referenced keys first so that I don't get integrity problems
+                PreparedStatement deleteFee =connection.prepareStatement("DELETE FROM fee_not_paid where person_id=?");
+                deleteFee.setInt(1, personTable.getItems().get(selectedIndex).getID());
+                deleteFee.executeUpdate();
+
                 PreparedStatement deletePerson = connection.prepareStatement("DELETE FROM people where ID=?");
                 deletePerson.setInt(1, personTable.getItems().get(selectedIndex).getID());
                 deletePerson.executeUpdate();
-
 
             } catch (SQLException e) {
                 new Alert(Alert.AlertType.ERROR, "Database Error").showAndWait();
@@ -519,7 +561,7 @@ public class ManagerProjectController {
             ManagerProjectFeeController controller = loader.getController();
 
             // Set an empty fee into the controller
-            controller.setFee(new Fee(0, 0.00,LocalDate.now()));
+            controller.setFee(new Fee(0, 0.00,LocalDate.now(),false));
 
             // Create the dialog
             Dialog<ButtonType> dialog = new Dialog<>();
