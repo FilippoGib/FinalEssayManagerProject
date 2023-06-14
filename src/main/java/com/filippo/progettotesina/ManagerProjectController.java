@@ -3,6 +3,8 @@ package com.filippo.progettotesina;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
+import com.zaxxer.hikari.HikariConfig;
+import com.zaxxer.hikari.HikariDataSource;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.event.ActionEvent;
@@ -11,24 +13,26 @@ import javafx.fxml.FXMLLoader;
 import javafx.scene.Scene;
 import javafx.scene.control.*;
 import javafx.scene.control.cell.PropertyValueFactory;
-import javafx.scene.layout.StackPane;
 import javafx.stage.FileChooser;
 import javafx.stage.Modality;
+import javafx.stage.Stage;
 
-import java.io.*;
-import java.sql.Date;
-import java.time.LocalDate;
-import java.time.ZoneId;
-import java.util.*;
+import java.io.File;
+import java.io.IOException;
+import java.math.BigDecimal;
 import java.sql.*;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
+import java.time.LocalDate;
+import java.util.List;
+import java.util.NoSuchElementException;
+import java.util.Optional;
 
 import com.zaxxer.hikari.HikariConfig;
 import com.zaxxer.hikari.HikariDataSource;
 import javafx.stage.Stage;
 
-import static com.filippo.progettotesina.Person.freeID;
+
+import javax.xml.transform.Result;
+
 import static com.filippo.progettotesina.Person.getMaxID;
 
 public class ManagerProjectController {
@@ -87,7 +91,6 @@ public class ManagerProjectController {
         // Listen for selection changes and show the person details when changed.
         personTable.getSelectionModel().selectedItemProperty().addListener((observable, oldValue, newValue) -> showPersonDetails(newValue));
 
-
     }
 
     public ObservableList<Person> getPersonData() {
@@ -109,10 +112,25 @@ public class ManagerProjectController {
     }
 
     void insertDBPerson(Person person) {
+        int freeID=0;
         try {
             Connection connection = dataSource.getConnection();
+            PreparedStatement getMaxID = connection.prepareStatement("SELECT ID FROM people ORDER BY ID");
+            ResultSet resultSet = getMaxID.executeQuery();
+            resultSet.next();
+            int i=0;
+            freeID = resultSet.getInt(1);
+            while(true){
+                if(freeID==i){
+                    resultSet.next();
+                    freeID = resultSet.getInt(1);
+                    i++;
+                    continue;
+                }
+                break;
+            }
             PreparedStatement insertPerson = connection.prepareStatement("INSERT INTO people (ID, firstName, lastName, street, city, birthday, medicalExamExpiryDate, paidFees) VALUES (?, ?, ?, ?, ?, ?, ?, ?)");
-                insertPerson.setInt(1, freeID());
+                insertPerson.setInt(1, i);
                 insertPerson.setString(2, person.getFirstName());
                 insertPerson.setString(3, person.getLastName());
                 insertPerson.setString(4, person.getStreet());
@@ -121,10 +139,71 @@ public class ManagerProjectController {
                 insertPerson.setDate(7, Date.valueOf(person.getMedicalExamExpiryDate()));
                 insertPerson.setBoolean(8, person.isPaidFees());
             insertPerson.executeUpdate();
+            if(!person.isPaidFees()){
+                Fee fee=null;
+                PreparedStatement getFee= connection.prepareStatement("SELECT * FROM fee WHERE expiry >= CURRENT_DATE() ORDER BY expiry ASC LIMIT 1");
+                ResultSet setFee= getFee.executeQuery();
+                ;
+                if(setFee.next()) {
+
+                    Date expiryDate = setFee.getDate("expiry");
+                    BigDecimal amount = setFee.getBigDecimal("amount");
+                    int feeId = setFee.getInt("id");
+
+                    // Create a new Fee object
+                    fee = new Fee(feeId, amount.toBigInteger().doubleValue(), expiryDate.toLocalDate()); //this is the next coming up fee
+                }
+                if(fee!=null){ //create a new record in the fee_not_paid table
+                    PreparedStatement insertFeeNotPaid = connection.prepareStatement("INSERT INTO fee_not_paid(person_id,fee_id) VALUES (?,?)");
+                        insertFeeNotPaid.setInt(1, i);
+                        insertFeeNotPaid.setInt(2, fee.getID());
+                    insertFeeNotPaid.executeUpdate();
+                }
+
+            }
+
         } catch (SQLException e) {
-            new Alert(Alert.AlertType.ERROR, "Database Error").showAndWait();
+            e.printStackTrace();
+            new Alert(Alert.AlertType.ERROR, "Database Error Insert person").showAndWait();
+
         }
     }
+/*   void insertDBNotPaidFees(Person person){
+        Fee fee=getCurrentFee();
+        try {
+            Connection connection = dataSource.getConnection();
+            if (!person.isPaidFees()) { //if this person didn't pay his fees
+                PreparedStatement insertFeeNotPaid = connection.prepareStatement("INSERT INTO fee_not_paid(person_id,fee_id) VALUES (?,?)");
+                    insertFeeNotPaid.setInt(1, person.getID());
+                    insertFeeNotPaid.setInt(2, fee.getID());
+                insertFeeNotPaid.executeUpdate();
+            }
+        } catch (SQLException e) {
+            new Alert(Alert.AlertType.ERROR, "Database Error Insert not paid fee").showAndWait();
+        }
+    }
+ public Fee getCurrentFee(){
+        Fee fee=null;
+        try{
+            Connection connection = dataSource.getConnection();
+            //System.out.println("connessione avvenuta con successo");
+            PreparedStatement getFee = connection.prepareStatement("SELECT * FROM fee WHERE expiry >= CURRENT_DATE() ORDER BY expiry ASC LIMIT 1");
+            ResultSet resultSet = getFee.executeQuery();
+            if (resultSet.next()) {
+                int feeId = resultSet.getInt("id");
+                Date expiryDate = resultSet.getDate("expiry");
+                BigDecimal amount = resultSet.getBigDecimal("amount");
+
+                // Create a new Fee object
+                fee = new Fee(feeId, amount.toBigInteger().doubleValue(), expiryDate.toLocalDate());
+            }
+
+        }catch (SQLException e) {
+            new Alert(Alert.AlertType.ERROR, "Database Error Get Fee").showAndWait();
+        }
+        System.out.println(fee);
+        return fee;
+    }*/
     void insertDBFee(Fee fee){
         try{
             Connection connection = dataSource.getConnection();
@@ -356,6 +435,7 @@ public class ManagerProjectController {
             if (clickedButton.orElse(ButtonType.CANCEL) == ButtonType.OK) {
                 personTable.getItems().add(controller.getPerson());
                 insertDBPerson(controller.getPerson());
+                //insertDBNotPaidFees(controller.getPerson());
             }
         } catch (IOException e) {
             e.printStackTrace();
@@ -368,7 +448,7 @@ public class ManagerProjectController {
     }
 
     @FXML
-    private void handleOpen() throws Exception {
+    private void handleOpen() {
          try {
         FileChooser fileChooser = new FileChooser();
         FileChooser.ExtensionFilter extFilter = new FileChooser.ExtensionFilter("JSON files (*.json)", "*.json");
@@ -381,9 +461,9 @@ public class ManagerProjectController {
             List<Person> persons = mapper.readValue(file, new TypeReference<List<Person>>() { //people in the json file
             });
             //System.out.println(persons);
-            List <Person> persons_distinct= personTable.getItems().stream().collect(Collectors.toList()); //people in the table
+            List <Person> persons_distinct= personTable.getItems().stream().toList(); //people in the table
             //System.out.println(persons_distinct);
-            List<Person> diff = persons.stream().filter(e->!persons_distinct.contains(e)).collect(Collectors.toList()); //difference
+            List<Person> diff = persons.stream().filter(e->!persons_distinct.contains(e)).toList(); //difference
             //System.out.println(diff);
             personTable.getItems().addAll(diff);
 
@@ -450,8 +530,7 @@ public class ManagerProjectController {
             // Show the dialog and wait until the user closes it
             Optional<ButtonType> clickedButton = dialog.showAndWait();
             if (clickedButton.orElse(ButtonType.CANCEL) == ButtonType.APPLY) {
-                //System.out.println("chiamo il metodo insertDBFee");
-                //i just need to insert the fee into the DB
+                //I just need to insert the fee into the DB
                 insertDBFee(controller.getFee());
             }
         } catch (IOException e) {

@@ -166,11 +166,11 @@ public class Person {
         }
         return maxID;
     }
-    public static int freeID(){
+/*    public static int freeID(){
         int freeID = 0;
         try {
             Connection connection = dataSource.getConnection();
-            PreparedStatement getMaxID = connection.prepareStatement("SELECT ID FROM people WHERE ID is not NULL ORDER BY ID");
+            PreparedStatement getMaxID = connection.prepareStatement("SELECT ID FROM people ORDER BY ID");
             ResultSet resultSet = getMaxID.executeQuery();
             resultSet.next();
             int i=0;
@@ -183,12 +183,14 @@ public class Person {
                 }
                 break;
             }
+            System.out.println(i);
             return i;
         } catch (SQLException e) {
             new Alert(Alert.AlertType.ERROR, "Database Error").showAndWait();
         }
+        System.out.println(freeID);
         return freeID;
-    }
+    }*/
 
 
     @Override
