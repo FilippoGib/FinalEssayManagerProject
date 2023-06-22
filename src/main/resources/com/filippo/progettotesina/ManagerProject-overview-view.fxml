@@ -42,7 +42,7 @@
             <Menu mnemonicParsing="false" text="Quote">
                <items>
                   <MenuItem mnemonicParsing="false" onAction="#handleNewFee" text="Inserisci" />
-                  <MenuItem mnemonicParsing="false" text="Mostra" />
+                  <MenuItem mnemonicParsing="false" onAction="#handleShowFees" text="Mostra" />
                </items>
             </Menu>
         </menus>

@@ -13,6 +13,7 @@ import javafx.fxml.FXMLLoader;
 import javafx.scene.Scene;
 import javafx.scene.control.*;
 import javafx.scene.control.cell.PropertyValueFactory;
+import javafx.scene.layout.BorderPane;
 import javafx.stage.FileChooser;
 import javafx.stage.Modality;
 import javafx.stage.Stage;
@@ -115,7 +116,7 @@ public class ManagerProjectController {
             }
             for(Person p : personList){
                 for(Fee f : feesList) {
-                    PreparedStatement insert=connection.prepareStatement("INSERT INTO fee_not_paid(person_id,fee_id) VALUES (?,?)");
+                    PreparedStatement insert=connection.prepareStatement(" INSERT INTO fee_not_paid(person_id,fee_id) VALUES (?,?)");
                         insert.setInt(1,p.getID());
                         insert.setInt(2,f.getID());
                     insert.executeUpdate();
@@ -125,7 +126,8 @@ public class ManagerProjectController {
             update.executeUpdate();
 
         }catch (SQLException e){
-            new Alert(Alert.AlertType.ERROR, "Database Error").showAndWait();
+            e.printStackTrace();
+            new Alert(Alert.AlertType.ERROR, "Database Error Startup").showAndWait();
         }
 
     }
@@ -577,6 +579,24 @@ public class ManagerProjectController {
             }
         } catch (IOException e) {
             e.printStackTrace();
+        }
+    }
+    @FXML
+    private void handleShowFees(ActionEvent event){
+        try{
+            FXMLLoader loader = new FXMLLoader();
+            loader.setLocation(getClass().getResource("ManagerProject-ShowFee-view.fxml"));
+            BorderPane view = loader.load();
+            ManagerProjectShowFeeController controller = loader.getController();
+
+            Scene scene = new Scene(view);
+            Stage stage = new Stage();
+            stage.setTitle("Quote");
+            stage.setScene(scene);
+            stage.show();
+
+        }catch (IOException i){
+            i.printStackTrace();
         }
     }
 }

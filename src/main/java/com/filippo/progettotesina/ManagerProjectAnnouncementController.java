@@ -68,7 +68,7 @@ public class ManagerProjectAnnouncementController {
         personTable.setItems(getPersonData().stream().filter(p->isExpiredMedicalExam(p))
                 .collect(Collectors.toCollection(FXCollections::observableArrayList)));
 
-        personFeesTable.setItems(getPersonData().stream().filter(p->!p.isPaidFees())
+        personFeesTable.setItems(getPersonData().stream().filter(p->!p.isPaidFees() || oldFeesNotPaid(p))
                 .collect(Collectors.toCollection(FXCollections::observableArrayList)));
 
         dueFeesColumn.setCellValueFactory(cellData -> {
@@ -77,6 +77,21 @@ public class ManagerProjectAnnouncementController {
             return new SimpleStringProperty(String.valueOf(unpaidFeesCount)); //Current fee included
         });
 
+    }
+    public boolean oldFeesNotPaid(Person person){
+        boolean ret= false;
+        try {
+            Connection connection = dataSource.getConnection();
+            PreparedStatement notPaid = connection.prepareStatement("select * from fee_not_paid where person_id = ?");
+            notPaid.setInt(1,person.getID());
+            ResultSet p = notPaid.executeQuery();
+            if(p.next()){
+                ret=true;
+            }
+        } catch (SQLException e) {
+            new Alert(Alert.AlertType.ERROR, "Database Error").showAndWait();
+        }
+        return ret;
     }
 
     public ObservableList<Person> getPersonData() {
