@@ -5,11 +5,16 @@ import com.zaxxer.hikari.HikariDataSource;
 import javafx.beans.property.SimpleStringProperty;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
+import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
+import javafx.scene.Parent;
+import javafx.scene.Scene;
 import javafx.scene.control.*;
 import javafx.scene.control.cell.PropertyValueFactory;
+import javafx.scene.layout.BorderPane;
 import javafx.stage.Modality;
+import javafx.stage.Stage;
 
 import java.io.IOException;
 import java.sql.Connection;
@@ -44,6 +49,8 @@ public class ManagerProjectAnnouncementController {
     @FXML
     private TableColumn<Person, String> dueFeesColumn;
     private ObservableList<Person> people;
+
+    Fee fee;
 
     public static HikariDataSource dataSource;
 
@@ -137,4 +144,46 @@ public class ManagerProjectAnnouncementController {
         }
         return unpaidFeesCount;
     }
+    @FXML
+    void handleShowNotPaidFees(ActionEvent event) {
+        try {
+            FXMLLoader loader = new FXMLLoader(getClass().getResource("ManagerProject-ShowNotPaidFees-view.fxml"));
+            Parent root;
+            int selected = selectedIndex();
+            try {
+                Person p=new Person(personFeesTable.getItems().get(selected));
+                root = loader.load();
+                ManagerProjectShowNotPaidFeesController controller = loader.getController();
+                controller.setPerson(p); //create a new person from person and setting it into the controller
+                controller.initialize();
+                Stage stage = new Stage();
+                stage.initModality(Modality.APPLICATION_MODAL);
+                stage.setScene(new Scene(root));
+                stage.show();
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        }catch (NoSuchElementException n){
+            showNoPersonSelectedAlert();
+        }
+    }
+
+    void showNoPersonSelectedAlert() {
+        Alert alert = new Alert(Alert.AlertType.WARNING);
+        alert.setTitle("Nessuna selezione");
+        alert.setHeaderText("Nessuna persona selezionata");
+        alert.setContentText("Per favore seleziona una persona da cancellare");
+        alert.showAndWait();
+    }
+    int selectedIndex() {
+        int selectedIndex = personFeesTable.getSelectionModel().getSelectedIndex();
+        if (selectedIndex < 0) {
+            throw new NoSuchElementException();
+
+        }
+        return selectedIndex;
+    }
+
+
 }
+
