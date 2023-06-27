@@ -7,6 +7,7 @@ import java.sql.SQLException;
 import java.time.LocalDate;
 import java.time.ZoneId;
 import java.util.Date;
+import java.util.Objects;
 
 import javafx.beans.property.BooleanProperty;
 import javafx.beans.property.ObjectProperty;
@@ -145,11 +146,11 @@ public class Person {
         return paidFees;
     }
 
-    public Boolean isExpiredMedicalExam() {
+   /* public Boolean isExpiredMedicalExam() {
         Date dateMedicalExamExpiryDate = Date.from(this.medicalExamExpiryDate.getValue().atStartOfDay().atZone(ZoneId.systemDefault()).toInstant());
         Date dateNow = Date.from(LocalDate.now().atStartOfDay().atZone(ZoneId.systemDefault()).toInstant());
-        return !dateNow.after(dateMedicalExamExpiryDate);
-    }
+        return dateNow.after(dateMedicalExamExpiryDate);
+    }*/
 
     public static int getMaxID() {
         int maxID = 0;
@@ -164,5 +165,53 @@ public class Person {
             new Alert(Alert.AlertType.ERROR, "Database Error").showAndWait();
         }
         return maxID;
+    }
+/*    public static int freeID(){
+        int freeID = 0;
+        try {
+            Connection connection = dataSource.getConnection();
+            PreparedStatement getMaxID = connection.prepareStatement("SELECT ID FROM people ORDER BY ID");
+            ResultSet resultSet = getMaxID.executeQuery();
+            resultSet.next();
+            int i=0;
+            freeID = resultSet.getInt(1);
+            while(true){
+                if(freeID==i){
+                    resultSet.next();
+                    freeID = resultSet.getInt(1);
+                    i++;
+                }
+                break;
+            }
+            System.out.println(i);
+            return i;
+        } catch (SQLException e) {
+            new Alert(Alert.AlertType.ERROR, "Database Error").showAndWait();
+        }
+        System.out.println(freeID);
+        return freeID;
+    }*/
+
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        Person person = (Person) o;
+        return ID == person.ID;
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(ID, firstName, lastName);
+    }
+
+    @Override
+    public String toString() {
+        return "Person{" +
+                "ID=" + ID +
+                ", firstName=" + firstName +
+                ", lastName=" + lastName +
+                '}';
     }
 }

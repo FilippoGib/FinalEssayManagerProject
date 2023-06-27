@@ -39,12 +39,12 @@
                   <Label text="Data di nascita" GridPane.rowIndex="4" />
                   <Label text="Scadenza visita medica" GridPane.rowIndex="5" />
                   <Label text="Quota" GridPane.rowIndex="6" />
-                  <TextField fx:id="firstNameField" GridPane.columnIndex="1" />
-                  <TextField fx:id="lastNameField" GridPane.columnIndex="1" GridPane.rowIndex="1" />
-                  <TextField fx:id="streetField" GridPane.columnIndex="1" GridPane.rowIndex="2" />
-                  <TextField fx:id="cityField" GridPane.columnIndex="1" GridPane.rowIndex="3" />
-                  <DatePicker fx:id="birthdayDatePicker" prefHeight="25.0" prefWidth="243.0" GridPane.columnIndex="1" GridPane.rowIndex="4" />
-                  <DatePicker fx:id="medicalExamExpiryDatePicker" prefHeight="25.0" prefWidth="237.0" GridPane.columnIndex="1" GridPane.rowIndex="5" />
+                  <TextField fx:id="firstNameField" promptText="Nome" GridPane.columnIndex="1" />
+                  <TextField fx:id="lastNameField" promptText="Cognome" GridPane.columnIndex="1" GridPane.rowIndex="1" />
+                  <TextField fx:id="streetField" promptText="Via" GridPane.columnIndex="1" GridPane.rowIndex="2" />
+                  <TextField fx:id="cityField" promptText="Citta" GridPane.columnIndex="1" GridPane.rowIndex="3" />
+                  <DatePicker fx:id="birthdayDatePicker" prefHeight="25.0" prefWidth="243.0" promptText="01/01/2000" GridPane.columnIndex="1" GridPane.rowIndex="4" />
+                  <DatePicker fx:id="medicalExamExpiryDatePicker" prefHeight="25.0" prefWidth="237.0" promptText="01/01/2000" GridPane.columnIndex="1" GridPane.rowIndex="5" />
                   <ButtonBar prefHeight="31.0" prefWidth="189.0" GridPane.columnIndex="1" GridPane.rowIndex="6">
                      <buttons>
                         <RadioButton fx:id="paidButton" mnemonicParsing="false" text="Pagata">
