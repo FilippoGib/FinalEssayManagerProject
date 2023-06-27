@@ -81,6 +81,7 @@ public class ManagerProjectAnnouncementController {
         dueFeesColumn.setCellValueFactory(cellData -> {
             Person person = cellData.getValue();
             int unpaidFeesCount = getUnpaidFeesCount(person.getID());
+            if(unpaidFeesCount==0) unpaidFeesCount++;
             return new SimpleStringProperty(String.valueOf(unpaidFeesCount)); //Current fee included
         });
 
